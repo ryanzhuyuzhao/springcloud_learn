@@ -2,6 +2,10 @@
 
 git地址为：https://github.com/Netflix/eureka.git
 
+git clone github上的项目很慢时在github.com网址后面加上.cnpmjs.org映射
+
+https://github.com.cnpmjs.org
+
 idea搭建eureka不通过需要更改build.gradle文件中的仓库详情可见
 
 https://www.jianshu.com/p/28d719b499ec
