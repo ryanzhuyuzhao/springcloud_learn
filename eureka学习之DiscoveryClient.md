@@ -57,7 +57,7 @@ DiscoveryClient类中的register是用来服务注册的，该方法通过http�
         //负责存放eureka注册的相关信息，状态码，headers头部信息，uri地址
         EurekaHttpResponse<Void> httpResponse;
         try {
-        	//此处调用是eureka注册的具体逻辑,AbstractJerseyEurekaHttpClient类中实现了register方法，实现方法中是使用的Jersey框架来实现eureka客户端与服务端之间的http通信,也可以自己实现EurekaHttpClient中的register方法
+        	//此处调用是eureka注册的具体逻辑,AbstractJerseyEurekaHttpClient类中实现了register方法，实现方法中是使用的Jersey框架来实现eureka客               户端与服务端之间的http通信,也可以自己实现EurekaHttpClient中的register方法
             httpResponse = eurekaTransport.registrationClient.register(instanceInfo);
         } catch (Exception e) {
             logger.warn(PREFIX + "{} - registration failed {}", appPathIdentifier, e.getMessage(), e);
@@ -107,3 +107,26 @@ public EurekaHttpResponse<Void> register(InstanceInfo info) {
 ```
 
 分析到这里，我们怎能看到InstanceInfo这个类的身影，它出现的如此频繁，此类必定不是碌碌无为之辈。这个类在eureka注册中起到的作用非常关键，它是一系列注册数据存放的实体。限于篇幅我们在这里就不具体讲解这个类了。有兴趣的同学可以到eureka学习之InstanceInfo去了解。
+
+好了我们在回来继续分析DiscoveryClient类里的register方法，通过追踪方法我们可以看到InstanceInfoReplicator类里的run方法调用了register方法。通过类描述，A task for updating and replicating the local instanceinfo to the remote server.这个类是负责更新和复制本地eureka相关数据到远程server服务端的。以下是run方法调用register方法的具体代码。而InstanceInfoReplicator实例是在DiscoveryClient的方法initScheduledTasks中new创造对象的。initScheduledTasks方法是在eureka客户端用来初始化所有调度任务对象的。
+
+```
+public void run() {
+        try {
+            discoveryClient.refreshInstanceInfo();
+			//查询是否和服务器存储的信息是否有更新
+            Long dirtyTimestamp = instanceInfo.isDirtyWithTime();
+            //dirtyTimestamp如果不为null则调用register()方法进行注册动作
+            if (dirtyTimestamp != null) {
+                discoveryClient.register();
+                instanceInfo.unsetIsDirty(dirtyTimestamp);
+            }
+        } catch (Throwable t) {
+            logger.warn("There was a problem with the instance info replicator", t);
+        } finally {
+            Future next = scheduler.schedule(this, replicationIntervalSeconds, TimeUnit.SECONDS);
+            scheduledPeriodicRef.set(next);
+        }
+    }
+```
+
