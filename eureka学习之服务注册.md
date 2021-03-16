@@ -172,7 +172,7 @@ public void register(InstanceInfo registrant, int leaseDuration, boolean isRepli
                     registrant = existingLease.getHolder();
                 }
             } else {
-            	//如果注册信息是以前不存的的，就
+            	//如果注册信息是以前不存的的，就更新注册信息
                 // The lease does not exist and hence it is a new registration
                 synchronized (lock) {
                     if (this.expectedNumberOfClientsSendingRenews > 0) {
