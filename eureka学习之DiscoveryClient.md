@@ -1,3 +1,5 @@
+### 1.服务注册
+
 1.用git下载eureka源代码，
 
 git地址为：https://github.com/Netflix/eureka.git
@@ -37,6 +39,8 @@ location URI地址信息
 
 
 > ![image-20210312110626805](C:\Users\kj00078\AppData\Roaming\Typora\typora-user-images\image-20210312110626805.png)
+
+
 
 
 
@@ -80,7 +84,7 @@ EurekaHttpClient类继承图
 
 AbstractJerseyEurekaHttpClient类中实现的register方法具体代码如下：
 
-```
+```java
 public EurekaHttpResponse<Void> register(InstanceInfo info) {
         String urlPath = "apps/" + info.getAppName();
         ClientResponse response = null;
@@ -110,7 +114,7 @@ public EurekaHttpResponse<Void> register(InstanceInfo info) {
 
 好了我们在回来继续分析DiscoveryClient类里的register方法，通过追踪方法我们可以看到InstanceInfoReplicator类里的run方法调用了register方法。通过类描述，A task for updating and replicating the local instanceinfo to the remote server.这个类是负责更新和复制本地eureka相关数据到远程server服务端的。以下是run方法调用register方法的具体代码。而InstanceInfoReplicator实例是在DiscoveryClient的方法initScheduledTasks中new创造对象的。initScheduledTasks方法是在eureka客户端用来初始化所有调度任务对象的。
 
-```
+```java
 public void run() {
         try {
             discoveryClient.refreshInstanceInfo();
@@ -136,7 +140,7 @@ public void run() {
 
 在初始化eureka服务器上下文的方法initEurekaServerContext中我们可以看到PeerAwareInstanceRegistry这么一个类，单从名字上看这个类应该是和注册实例有关的一个类。进到这个类里果然有register这个方法。接下来，让我们看下这个方法的具体实现。在抽象类AbstractInstanceRegistry里有register方法的具体实现。
 
-```
+```java
 public void register(InstanceInfo registrant, int leaseDuration, boolean isReplication) {
         read.lock();
         try {
@@ -184,6 +188,7 @@ public void register(InstanceInfo registrant, int leaseDuration, boolean isRepli
                 lease.setServiceUpTimestamp(existingLease.getServiceUpTimestamp());
             }
             gMap.put(registrant.getId(), lease);
+            //将注册服务名称和Id存储到队列中
             recentRegisteredQueue.add(new Pair<Long, String>(
                     System.currentTimeMillis(),
                     registrant.getAppName() + "(" + registrant.getId() + ")"));
@@ -211,6 +216,7 @@ public void register(InstanceInfo registrant, int leaseDuration, boolean isRepli
                 lease.serviceUp();
             }
             registrant.setActionType(ActionType.ADDED);
+            //将信息存入最近改变队列中
             recentlyChangedQueue.add(new RecentlyChangedItem(lease));
             registrant.setLastUpdatedTimestamp();
             invalidateCache(registrant.getAppName(), registrant.getVIPAddress(), registrant.getSecureVipAddress());
@@ -222,3 +228,4 @@ public void register(InstanceInfo registrant, int leaseDuration, boolean isRepli
     }
 ```
 
+PeerAwareInstanceRegistry的register()方法，我们通过代码追踪可以看到最终是被ApplicationResource类的addInstance方法调用。ApplicationResource类是一个Http API接口。此类里的方法通过Http接口暴露出来供eureka client调用。而addInstance方法是用来注册eureka服务的。
