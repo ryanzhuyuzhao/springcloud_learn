@@ -1,33 +1,5 @@
 ### 1.服务注册
 
-1.用git下载eureka源代码，
-
-git地址为：https://github.com/Netflix/eureka.git
-
-idea搭建eureka不通过需要更改build.gradle文件中的仓库详情可见
-
-https://www.jianshu.com/p/28d719b499ec
-
-具体配置文件在同目录下的build.gradle文件中                                           
-
-
-
-重装系统
-
-https://windows.dqsspx.top/win1064.html
-
-
-
-idea激活码
-
-http://lookdiv.com/index/index/indexcodeindex.html
-
-7788
-
-code-iris idea类继承关系插件
-
-
-
 EurekaHttpResponse存储eureka注册的相关信息
 
 statusCode 状态码信息
