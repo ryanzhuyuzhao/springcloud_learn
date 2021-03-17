@@ -1,0 +1,32 @@
+plugins {
+    id 'nebula.netflixoss' version '8.3.0'
+}
+apply plugin: 'java'
+
+// Establish version and status
+ext.githubProjectName = rootProject.name // Change if github project name is not the same as the root project's name
+
+subprojects {
+    apply plugin: 'nebula.netflixoss'
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    group = "com.netflix.${githubProjectName}" // TEMPLATE: Set to organization of project
+
+    repositories {
+        jcenter()
+    }
+
+    if (project.hasProperty('useMavenLocal')) {
+        repositories {
+            mavenLocal()
+        }
+    }
+    if (project.getProperty('status').equals("snapshot")) {
+        repositories {
+            maven { url 'http://oss.jfrog.org/oss-snapshot-local' }
+        }
+    }
+}
